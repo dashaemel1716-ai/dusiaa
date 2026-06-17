@@ -111,6 +111,7 @@
   .pickbtn.pay.active{background:var(--gold);border-color:var(--gold);}
   .pickbtn.cash.active{background:#3aa66a;border-color:#3aa66a;}
   .pickbtn.inc.active{background:var(--sage);border-color:var(--sage);}
+  .pickbtn.main.active{background:#3aa66a;border-color:#3aa66a;}
 
   /* ---------- deposit (вклад) ---------- */
   .deposit-bal{display:flex;align-items:center;justify-content:space-between;gap:10px;background:linear-gradient(135deg,#d8b878,#c8a96a);border-radius:16px;padding:13px 16px;color:#fff;box-shadow:var(--shadow-sm);}
@@ -186,10 +187,10 @@
 
   /* ---------- bottom nav ---------- */
   nav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;padding:0 0 max(14px,env(safe-area-inset-bottom));pointer-events:none;}
-  .navbar{pointer-events:auto;display:flex;gap:4px;background:rgba(251,250,248,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.7);box-shadow:0 8px 30px rgba(80,72,68,.18);border-radius:22px;padding:7px;}
-  .navbtn{border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 18px;border-radius:16px;color:var(--ink-soft);transition:.2s;font-family:inherit;}
+  .navbar{pointer-events:auto;display:flex;gap:2px;background:rgba(251,250,248,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.7);box-shadow:0 8px 30px rgba(80,72,68,.18);border-radius:22px;padding:6px;max-width:96vw;}
+  .navbtn{border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 12px;border-radius:15px;color:var(--ink-soft);transition:.2s;font-family:inherit;}
   .navbtn svg{width:22px;height:22px;}
-  .navbtn span{font-size:11px;font-weight:800;letter-spacing:.2px;}
+  .navbtn span{font-size:10px;font-weight:800;letter-spacing:.1px;}
   .navbtn.active{background:var(--rose);color:#fff;box-shadow:0 4px 14px rgba(190,135,145,.45);}
 
   /* ---------- pages ---------- */
@@ -201,6 +202,29 @@
   .savetag b{color:var(--sage);}
 
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+  /* ---------- calendar ---------- */
+  .cal-add{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
+  .cal-add input{border:none;background:var(--surface-2);border-radius:12px;padding:11px 13px;font-family:inherit;font-size:14.5px;font-weight:600;color:var(--ink);outline:none;}
+  .cal-add input:focus{box-shadow:0 0 0 2px var(--rose-soft);}
+  .cal-add-row{display:flex;gap:8px;}
+  .cal-add-row input{flex:1;min-width:0;}
+  .cal-add-row select{flex:1;min-width:0;border:none;background:var(--surface-2);border-radius:12px;padding:11px 13px;font-family:inherit;font-size:14.5px;font-weight:600;color:var(--ink);outline:none;}
+  .cal-add-row select:focus{box-shadow:0 0 0 2px var(--rose-soft);}
+  .cal-add-row .addbtn{flex:none;width:46px;}
+  .ev-day{font-size:12px;font-weight:800;color:var(--gold);letter-spacing:.3px;text-transform:capitalize;margin:14px 0 6px;}
+  .ev-day:first-child{margin-top:2px;}
+  .ev{display:flex;align-items:center;gap:11px;padding:9px 2px;border-top:1px solid var(--line);}
+  .ev:first-of-type{border-top:none;}
+  .ev .evtime{flex:none;display:flex;flex-direction:column;font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--ink);min-width:78px;line-height:1.15;}
+  .ev .evtime small{font-family:'Nunito Sans',sans-serif;font-size:10.5px;font-weight:700;color:var(--gold);}
+  .ev .evtitle{flex:1;font-size:15px;font-weight:700;word-break:break-word;}
+  .ev .del{flex:none;background:none;border:none;color:var(--ink-faint);font-size:19px;cursor:pointer;opacity:.55;padding:2px 4px;}
+  .ev .del:active{color:var(--rose);opacity:1;}
+  .mini-ev{display:flex;align-items:center;gap:10px;padding:8px 2px;border-top:1px solid var(--line);}
+  .mini-ev:first-child{border-top:none;}
+  .mini-ev .when{flex:none;font-size:12px;font-weight:800;color:var(--gold);min-width:96px;}
+  .mini-ev .what{flex:1;font-size:14.5px;font-weight:700;}
 </style>
 </head>
 <body>
@@ -228,14 +252,79 @@
         <button class="addbtn" data-add="main">+</button>
       </div>
     </div>
+
+    <div class="card" id="main-events-card" style="display:none">
+      <div class="card-head">
+        <span class="dot" style="background:var(--gold)"></span>
+        <h2>Ближайшие встречи</h2>
+      </div>
+      <div id="main-events"></div>
+    </div>
+
+    <div class="card" id="main-cats-card" style="display:none">
+      <div class="card-head">
+        <span class="dot" style="background:var(--sage)"></span>
+        <h2>Все мои дела</h2>
+        <span class="count" id="main-cats-count"></span>
+      </div>
+      <div id="main-cats"></div>
+    </div>
+
     <p class="savetag">Всё сохраняется само · <b>с любовью к тебе</b> 🌸</p>
+  </section>
+
+  <!-- ===================== PAGE: КАЛЕНДАРЬ ===================== -->
+  <section class="page" id="page-cal">
+    <div class="card">
+      <div class="card-head">
+        <span class="dot" style="background:var(--gold)"></span>
+        <h2>Календарь</h2>
+        <span class="count" id="cal-count"></span>
+      </div>
+      <p class="seedhint" style="margin:-2px 0 12px">Запиши встречу или событие — дату, время и название.</p>
+      <div id="cal-list"></div>
+      <div class="cal-add">
+        <input id="cal-title" placeholder="Что за встреча / событие" maxlength="60">
+        <div class="cal-add-row">
+          <input id="cal-date" type="date">
+          <input id="cal-time" type="time">
+        </div>
+        <div class="cal-add-row">
+          <select id="cal-dur">
+            <option value="">без длительности</option>
+            <option value="15">15 мин</option>
+            <option value="30">30 мин</option>
+            <option value="45">45 мин</option>
+            <option value="60" selected>1 час</option>
+            <option value="90">1,5 часа</option>
+            <option value="120">2 часа</option>
+            <option value="180">3 часа</option>
+            <option value="240">4 часа</option>
+            <option value="300">5 часов</option>
+            <option value="360">6 часов</option>
+            <option value="420">7 часов</option>
+            <option value="480">8 часов</option>
+            <option value="600">10 часов</option>
+            <option value="720">12 часов</option>
+            <option value="900">15 часов</option>
+            <option value="1080">18 часов</option>
+            <option value="1320">22 часа</option>
+            <option value="1440">24 часа</option>
+          </select>
+          <button class="addbtn" style="background:var(--gold)" data-add="cal">+</button>
+        </div>
+      </div>
+    </div>
+    <p class="savetag">Ближайшие встречи покажутся и на «Главном» 🌸</p>
   </section>
 
   <!-- ===================== PAGE: ДЕНЬГИ ===================== -->
   <section class="page" id="page-money">
+    <div class="card-head" style="margin:18px 2px 2px"><span class="dot" style="background:var(--rose)"></span><h2 style="font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:600;margin:0">Кредитки</h2></div>
     <div class="balances">
       <div class="bal bal-t">
         <div class="bank">Тинькофф</div>
+        <div class="sub">кредитка</div>
         <div class="cardrow"><span>Лимит</span><input class="editmini" id="limit-t" inputmode="decimal" placeholder="0"></div>
         <div class="cardrow"><span>Потрачено</span><input class="editmini" id="spent-t" inputmode="decimal" placeholder="0"></div>
         <div class="cardmeta big">
@@ -246,6 +335,7 @@
       </div>
       <div class="bal bal-s">
         <div class="bank">Сбербанк</div>
+        <div class="sub">кредитка</div>
         <div class="cardrow"><span>Лимит</span><input class="editmini" id="limit-s" inputmode="decimal" placeholder="0"></div>
         <div class="cardrow"><span>Потрачено</span><input class="editmini" id="spent-s" inputmode="decimal" placeholder="0"></div>
         <div class="cardmeta big">
@@ -315,8 +405,8 @@
       </div>
       <div class="cardpick">
         <span>На карту:</span>
-        <button class="pickbtn pay active" data-pay="t">Тинькофф</button>
-        <button class="pickbtn pay" data-pay="s">Сбербанк</button>
+        <button class="pickbtn pay active" data-pay="t">Кредитка Тинькофф</button>
+        <button class="pickbtn pay" data-pay="s">Кредитка Сбера</button>
       </div>
 
       <div class="list" id="transfer-list" style="margin-top:12px"></div>
@@ -355,8 +445,10 @@
       </div>
       <div class="cardpick">
         <span>Списать с:</span>
-        <button class="pickbtn active" data-pick="t">Тинькофф</button>
-        <button class="pickbtn" data-pick="s">Сбербанк</button>
+        <button class="pickbtn active" data-src="cred-t">Кредитка Тинькофф</button>
+        <button class="pickbtn" data-src="cred-s">Кредитка Сбера</button>
+        <button class="pickbtn main" data-src="cash-t">Тинькофф</button>
+        <button class="pickbtn main" data-src="cash-s">Сбербанк</button>
       </div>
       <div class="catpick" id="cat-pick"></div>
     </div>
@@ -405,6 +497,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="3"/></svg>
       <span>Дела</span>
     </button>
+    <button class="navbtn" data-page="cal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+      <span>Календарь</span>
+    </button>
   </div>
 </nav>
 
@@ -443,6 +539,7 @@ const DEFAULT = {
   cash:   {t:0, s:0},
   deposit: 0,
   transfers: [],
+  events: [],
   income: [
     {label:'Скинула мама 💗', amount:0},
   ],
@@ -561,6 +658,8 @@ function cleanNum(s){
   return out;
 }
 function parseNum(s){ const n=parseFloat(cleanNum(s)); return isNaN(n)?0:n; }
+const cardName   = k => k==='t' ? 'Тинькофф' : 'Сбербанк';
+const creditName = k => k==='t' ? 'Кредитка Тинькофф' : 'Кредитка Сбера';
 
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
@@ -574,8 +673,8 @@ function renderList(arr, container, countEl){
     const li=document.createElement('li');
     li.className='task'+(item.done?' done':'');
     li.innerHTML=`<div class="chk">${CHECK}</div><div class="txt">${esc(item.t)}</div><button class="del">×</button>`;
-    li.querySelector('.chk').onclick=()=>{item.done=!item.done;save();renderList(arr,container,countEl);refreshCounts();};
-    li.querySelector('.del').onclick=()=>{arr.splice(i,1);save();renderList(arr,container,countEl);refreshCounts();};
+    li.querySelector('.chk').onclick=()=>{item.done=!item.done;save();renderList(arr,container,countEl);refreshCounts();syncMainViews();};
+    li.querySelector('.del').onclick=()=>{arr.splice(i,1);save();renderList(arr,container,countEl);refreshCounts();syncMainViews();};
     container.appendChild(li);
   });
   if(countEl){const left=arr.filter(x=>!x.done).length;countEl.textContent=left?left+' осталось':'всё готово ✓';}
@@ -594,19 +693,26 @@ function renderMoneyList(arr, container, type, countEl){
     const sign = type==='income'?'+':'−';
     let tags='';
     if(type==='expense'){
-      if(item.card) tags+=`<span class="mcard">${item.card==='t'?'Тинькофф':'Сбербанк'}</span>`;
+      const src = item.src || (item.card ? 'cred-'+item.card : null); // совместимость со старыми тратами
+      if(src){
+        const isCred = src.startsWith('cred');
+        tags+=`<span class="mcard"${isCred?'':' style="color:#fff;background:#3aa66a"'}>${srcLabel(src)}</span>`;
+      }
       const sc = SPEND_CATS.find(c=>c.id===item.cat);
       if(sc) tags+=`<span class="mcard" style="color:#fff;background:${sc.color}">${sc.name}</span>`;
     }
     if(type==='income' && item.card){
-      tags+=`<span class="mcard" style="color:#fff;background:var(--sage)">${item.card==='t'?'Тинькофф':'Сбербанк'}</span>`;
+      tags+=`<span class="mcard" style="color:#fff;background:var(--sage)">${cardName(item.card)}</span>`;
     }
     row.innerHTML=`<span class="mtxt">${esc(item.label)}${tags}</span>
       <span class="mamt">${sign}${fmt(item.amount)}</span>
       <button class="del">×</button>`;
     row.querySelector('.del').onclick=()=>{
-      if(type==='expense' && item.card) data.spent[item.card]=Math.max(0,(Number(data.spent[item.card])||0)-(Number(item.amount)||0));
-      if(type==='income' && item.card) data.cash[item.card]=Math.max(0,(Number(data.cash[item.card])||0)-(Number(item.amount)||0));
+      if(type==='expense'){
+        const src = item.src || (item.card ? 'cred-'+item.card : null);
+        if(src) applyExpense(src, Number(item.amount)||0, -1); // возвращаем
+      }
+      if(type==='income' && item.card) data.cash[item.card]=(Number(data.cash[item.card])||0)-(Number(item.amount)||0);
       arr.splice(i,1);save();renderMoney();
     };
     container.appendChild(row);
@@ -655,6 +761,91 @@ function refreshCounts(){
   document.getElementById('main-count').textContent=left?left+' осталось':'всё готово ✓';
 }
 
+/* ---- Главное: все дела из категорий ---- */
+function renderMainCats(){
+  const card=document.getElementById('main-cats-card');
+  const wrap=document.getElementById('main-cats');
+  const cnt=document.getElementById('main-cats-count');
+  let total=0, left=0;
+  wrap.innerHTML='';
+  CATS.forEach(c=>{
+    (data.cats[c.id]||[]).forEach((item)=>{
+      total++; if(!item.done) left++;
+      const li=document.createElement('li');
+      li.className='task'+(item.done?' done':'');
+      li.style.listStyle='none';
+      li.innerHTML=`<div class="chk">${CHECK}</div>
+        <div class="txt">${esc(item.t)}<span class="mcard" style="color:#fff;background:${c.color};margin-left:7px">${c.name}</span></div>`;
+      li.querySelector('.chk').onclick=()=>{item.done=!item.done;save();renderMainCats();renderCats();};
+      wrap.appendChild(li);
+    });
+  });
+  if(total===0){ card.style.display='none'; return; }
+  card.style.display='';
+  cnt.textContent = left?left+' осталось':'всё готово ✓';
+}
+
+/* ---- даты/время для календаря ---- */
+function evKey(e){ return (e.date||'')+'T'+(e.time||'00:00'); }
+function ruDate(d){
+  try{ const dt=new Date(d+'T00:00'); return dt.toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'long'}); }
+  catch(_){ return d; }
+}
+
+/* ---- Главное: ближайшие встречи ---- */
+function renderMainEvents(){
+  const card=document.getElementById('main-events-card');
+  const wrap=document.getElementById('main-events');
+  const today=new Date(); today.setHours(0,0,0,0);
+  const up=(data.events||[]).filter(e=>e.date).filter(e=>{
+    const d=new Date(e.date+'T00:00'); return d>=today;
+  }).sort((a,b)=>evKey(a).localeCompare(evKey(b))).slice(0,5);
+  if(!up.length){ card.style.display='none'; return; }
+  card.style.display='';
+  wrap.innerHTML='';
+  up.forEach(e=>{
+    const end=endTime(e.time,e.dur);
+    const tline = e.time ? (end? e.time+'–'+end : e.time) : '';
+    const row=document.createElement('div');
+    row.className='mini-ev';
+    row.innerHTML=`<span class="when">${ruDate(e.date)}${tline?' · '+tline:''}</span><span class="what">${esc(e.title)}${e.dur?` · ${durText(e.dur)}`:''}</span>`;
+    wrap.appendChild(row);
+  });
+}
+
+/* ---- вкладка Календарь ---- */
+function renderCal(){
+  const wrap=document.getElementById('cal-list');
+  const cnt=document.getElementById('cal-count');
+  wrap.innerHTML='';
+  const evs=(data.events||[]).slice().sort((a,b)=>evKey(a).localeCompare(evKey(b)));
+  cnt.textContent = evs.length?evs.length+' шт.':'';
+  if(!evs.length){
+    const e=document.createElement('div');e.className='empty';e.textContent='Пока нет встреч — добавь ниже ✦';
+    wrap.appendChild(e);return;
+  }
+  let lastDay='';
+  evs.forEach((e)=>{
+    if(e.date!==lastDay){
+      lastDay=e.date;
+      const h=document.createElement('div');h.className='ev-day';h.textContent=ruDate(e.date);
+      wrap.appendChild(h);
+    }
+    const realIdx=data.events.indexOf(e);
+    const end=endTime(e.time,e.dur);
+    const timeLine = e.time ? (end? e.time+'–'+end : e.time) : '—';
+    const dur=durText(e.dur);
+    const row=document.createElement('div');
+    row.className='ev';
+    row.innerHTML=`<span class="evtime">${timeLine}${dur?`<small>${dur}</small>`:''}</span><span class="evtitle">${esc(e.title)}</span><button class="del">×</button>`;
+    row.querySelector('.del').onclick=()=>{data.events.splice(realIdx,1);save();renderCal();renderMainEvents();};
+    wrap.appendChild(row);
+  });
+}
+
+function syncMainViews(){ renderMainCats(); renderMainEvents(); }
+
+
 function renderMoney(){
   document.getElementById('limit-t').value = data.limits.t || '';
   document.getElementById('limit-s').value = data.limits.s || '';
@@ -702,7 +893,7 @@ function renderDeposit(){
     const isIn = tr.dir==='in';
     row.className='money-row '+(isIn?'income':'expense');
     const label = isIn ? 'Пополнение вклада'
-                       : `Перевод на <span class="mcard">${tr.card==='t'?'Тинькофф':'Сбербанк'}</span>`;
+                       : `Перевод на <span class="mcard">${creditName(tr.card)}</span>`;
     row.innerHTML=`<span class="mtxt">${label}</span>
       <span class="mamt">${isIn?'+':'−'}${fmt(tr.amount)}</span><button class="del">×</button>`;
     row.querySelector('.del').onclick=()=>{
@@ -786,6 +977,9 @@ function renderAll(){
   renderList(data.main, document.getElementById('main-list'), document.getElementById('main-count'));
   renderMoney();
   renderCats();
+  renderCal();
+  renderMainCats();
+  renderMainEvents();
 }
 
 /* ============================================================
@@ -801,12 +995,49 @@ function addCat(id,input){
   data.cats[id].push({t:v,done:false});input.value='';save();
   const card=input.closest('.card');
   renderList(data.cats[id], card.querySelector('[data-list]'), card.querySelector('[data-count]'));
+  syncMainViews();
+}
+function addEvent(){
+  const t=document.getElementById('cal-title');
+  const d=document.getElementById('cal-date');
+  const tm=document.getElementById('cal-time');
+  const du=document.getElementById('cal-dur');
+  const title=t.value.trim();
+  if(!title && !d.value)return;
+  data.events.push({title:title||'Встреча', date:d.value||'', time:tm.value||'', dur:du.value?Number(du.value):0});
+  t.value='';d.value='';tm.value='';save();renderCal();renderMainEvents();
+}
+/* красивое отображение длительности и времени окончания */
+function durText(min){
+  min=Number(min)||0; if(!min) return '';
+  if(min<60) return min+' мин';
+  const h=Math.floor(min/60), m=min%60;
+  return m? h+' ч '+m+' мин' : (h===1?'1 час':h+' ч');
+}
+function endTime(time,min){
+  if(!time||!min||Number(min)>=1440) return '';
+  const [hh,mm]=time.split(':').map(Number);
+  let total=hh*60+mm+Number(min);
+  total=((total%1440)+1440)%1440;
+  const eh=String(Math.floor(total/60)).padStart(2,'0'), em=String(total%60).padStart(2,'0');
+  return eh+':'+em;
 }
 let pickedCard = 't';
+let pickedSrc = 'cred-t';   // источник траты: cred-t/cred-s (кредитка) или cash-t/cash-s (основной счёт)
 let pickedPayCard = 't';
 let pickedCashCard = 't';
 let pickedIncomeCard = 't';
 let pickedCat = 'shopping';
+
+function applyExpense(src, amount, sign){ // sign +1 списать, -1 вернуть
+  const k = src.slice(-1);                // 't' или 's'
+  if(src.startsWith('cred')) data.spent[k]=(Number(data.spent[k])||0)+sign*amount;
+  else                       data.cash[k] =(Number(data.cash[k]) ||0)-sign*amount;
+}
+function srcLabel(src){
+  const k=src.slice(-1);
+  return src.startsWith('cred') ? creditName(k) : cardName(k);
+}
 
 function addMoney(type){
   const lbl=document.getElementById(type+'-label');
@@ -818,8 +1049,8 @@ function addMoney(type){
     data.income.push({label:label||'Доход', amount:amount||0, card:pickedIncomeCard});
     data.cash[pickedIncomeCard]=(Number(data.cash[pickedIncomeCard])||0)+(amount||0); // доход зачисляется на карту
   }else{
-    data.expense.push({label:label||'Трата', amount:amount||0, card:pickedCard, cat:pickedCat});
-    data.spent[pickedCard]=(Number(data.spent[pickedCard])||0)+(amount||0); // трата добавляется к потраченному
+    data.expense.push({label:label||'Трата', amount:amount||0, src:pickedSrc, cat:pickedCat});
+    applyExpense(pickedSrc, amount||0, +1); // списываем с выбранного источника
   }
   lbl.value='';amt.value='';save();renderMoney();
 }
@@ -886,6 +1117,7 @@ document.querySelectorAll('[data-add]').forEach(btn=>{
     if(t==='main') addTask(data.main, document.getElementById('main-input'), ()=>{renderList(data.main,document.getElementById('main-list'),document.getElementById('main-count'));});
     else if(t==='depin') addDeposit();
     else if(t==='cashin') addCashIn();
+    else if(t==='cal') addEvent();
     else if(t==='transfer') doTransfer();
     else if(t==='goal') addGoal();
     else addMoney(t);
@@ -899,6 +1131,7 @@ document.getElementById('depin-amount').onkeydown=e=>{if(e.key==='Enter')addDepo
 document.getElementById('cashin-amount').onkeydown=e=>{if(e.key==='Enter')addCashIn();};
 document.getElementById('transfer-amount').onkeydown=e=>{if(e.key==='Enter')doTransfer();};
 document.getElementById('goal-target').onkeydown=e=>{if(e.key==='Enter')addGoal();};
+document.getElementById('cal-title').onkeydown=e=>{if(e.key==='Enter')addEvent();};
 
 /* редактирование баланса вклада */
 (function(){
@@ -938,11 +1171,11 @@ function updateLeft(k){
   bar.classList.toggle('over',left<0);
 }
 
-/* выбор карты для траты */
-document.querySelectorAll('.pickbtn[data-pick]').forEach(b=>{
+/* выбор источника траты (кредитка / основной счёт) */
+document.querySelectorAll('.pickbtn[data-src]').forEach(b=>{
   b.onclick=()=>{
-    pickedCard=b.dataset.pick;
-    document.querySelectorAll('.pickbtn[data-pick]').forEach(x=>x.classList.remove('active'));
+    pickedSrc=b.dataset.src;
+    document.querySelectorAll('.pickbtn[data-src]').forEach(x=>x.classList.remove('active'));
     b.classList.add('active');
   };
 });
@@ -972,7 +1205,7 @@ document.querySelectorAll('.pickbtn[data-inc]').forEach(b=>{
 });
 
 /* навигация */
-const pages={main:'page-main',money:'page-money',cats:'page-cats'};
+const pages={main:'page-main',money:'page-money',cats:'page-cats',cal:'page-cal'};
 document.querySelectorAll('.navbtn').forEach(b=>{
   b.onclick=()=>{
     document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active'));
