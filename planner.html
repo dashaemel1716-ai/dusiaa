@@ -236,8 +236,8 @@
     <div class="balances">
       <div class="bal bal-t">
         <div class="bank">Тинькофф</div>
-        <div class="cardrow"><span>Лимит</span><input class="editmini" id="limit-t" inputmode="numeric" placeholder="0"></div>
-        <div class="cardrow"><span>Потрачено</span><input class="editmini" id="spent-t" inputmode="numeric" placeholder="0"></div>
+        <div class="cardrow"><span>Лимит</span><input class="editmini" id="limit-t" inputmode="decimal" placeholder="0"></div>
+        <div class="cardrow"><span>Потрачено</span><input class="editmini" id="spent-t" inputmode="decimal" placeholder="0"></div>
         <div class="cardmeta big">
           <span>Можно ещё</span><b id="left-t">0 ₽</b>
         </div>
@@ -246,8 +246,8 @@
       </div>
       <div class="bal bal-s">
         <div class="bank">Сбербанк</div>
-        <div class="cardrow"><span>Лимит</span><input class="editmini" id="limit-s" inputmode="numeric" placeholder="0"></div>
-        <div class="cardrow"><span>Потрачено</span><input class="editmini" id="spent-s" inputmode="numeric" placeholder="0"></div>
+        <div class="cardrow"><span>Лимит</span><input class="editmini" id="limit-s" inputmode="decimal" placeholder="0"></div>
+        <div class="cardrow"><span>Потрачено</span><input class="editmini" id="spent-s" inputmode="decimal" placeholder="0"></div>
         <div class="cardmeta big">
           <span>Можно ещё</span><b id="left-s">0 ₽</b>
         </div>
@@ -270,19 +270,19 @@
         <div class="bal bal-t">
           <div class="bank">Тинькофф</div>
           <div class="sub">на карте</div>
-          <input class="editamt" id="cash-t" inputmode="numeric" placeholder="0">
+          <input class="editamt" id="cash-t" inputmode="decimal" placeholder="0">
           <svg class="flo" viewBox="0 0 60 60"></svg>
         </div>
         <div class="bal bal-s">
           <div class="bank">Сбербанк</div>
           <div class="sub">на карте</div>
-          <input class="editamt" id="cash-s" inputmode="numeric" placeholder="0">
+          <input class="editamt" id="cash-s" inputmode="decimal" placeholder="0">
           <svg class="flo" viewBox="0 0 60 60"></svg>
         </div>
       </div>
       <p class="seedhint" style="margin:14px 0 7px">Пополнить карту</p>
       <div class="addmoney">
-        <input class="amt-in" id="cashin-amount" inputmode="numeric" placeholder="сумма" style="flex:1">
+        <input class="amt-in" id="cashin-amount" inputmode="decimal" placeholder="сумма" style="flex:1">
         <button class="addbtn green" data-add="cashin">+</button>
       </div>
       <div class="cardpick">
@@ -299,18 +299,18 @@
       </div>
       <div class="deposit-bal">
         <span>На вкладе</span>
-        <input class="dep-input" id="deposit-balance" inputmode="numeric" placeholder="0">
+        <input class="dep-input" id="deposit-balance" inputmode="decimal" placeholder="0">
       </div>
 
       <p class="seedhint" style="margin:14px 0 7px">Пополнить вклад</p>
       <div class="addmoney">
-        <input class="amt-in" id="depin-amount" inputmode="numeric" placeholder="сумма" style="flex:1">
+        <input class="amt-in" id="depin-amount" inputmode="decimal" placeholder="сумма" style="flex:1">
         <button class="addbtn green" data-add="depin">+</button>
       </div>
 
       <p class="seedhint" style="margin:14px 0 7px">Перевести с вклада на кредитку (погасить долг)</p>
       <div class="addmoney">
-        <input class="amt-in" id="transfer-amount" inputmode="numeric" placeholder="сумма" style="flex:1">
+        <input class="amt-in" id="transfer-amount" inputmode="decimal" placeholder="сумма" style="flex:1">
         <button class="addbtn" style="background:var(--gold)" data-add="transfer">→</button>
       </div>
       <div class="cardpick">
@@ -331,7 +331,7 @@
       <div class="list" id="income-list"></div>
       <div class="addmoney">
         <input class="lbl-in" id="income-label" placeholder="Откуда (напр. зарплата)" maxlength="40">
-        <input class="amt-in" id="income-amount" inputmode="numeric" placeholder="сумма">
+        <input class="amt-in" id="income-amount" inputmode="decimal" placeholder="сумма">
         <button class="addbtn green" data-add="income">+</button>
       </div>
       <div class="cardpick">
@@ -350,7 +350,7 @@
       <div class="list" id="expense-list"></div>
       <div class="addmoney">
         <input class="lbl-in" id="expense-label" placeholder="На что (напр. кафе)" maxlength="40">
-        <input class="amt-in" id="expense-amount" inputmode="numeric" placeholder="сумма">
+        <input class="amt-in" id="expense-amount" inputmode="decimal" placeholder="сумма">
         <button class="addbtn" data-add="expense">+</button>
       </div>
       <div class="cardpick">
@@ -378,7 +378,7 @@
       <div id="goal-list"></div>
       <div class="addmoney" style="margin-top:14px">
         <input class="lbl-in" id="goal-name" placeholder="На что копить" maxlength="40">
-        <input class="amt-in" id="goal-target" inputmode="numeric" placeholder="цель ₽">
+        <input class="amt-in" id="goal-target" inputmode="decimal" placeholder="цель ₽">
         <button class="addbtn green" data-add="goal">+</button>
       </div>
     </div>
@@ -551,7 +551,16 @@ function setSprigs(){
    РЕНДЕР
 ============================================================ */
 const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
-const fmt = n => (Number(n)||0).toLocaleString('ru-RU')+' ₽';
+const fmt = n => { n=Number(n)||0; const k=Math.round(n*100)%100!==0; return n.toLocaleString('ru-RU',{minimumFractionDigits:k?2:0,maximumFractionDigits:2})+' ₽'; };
+// разрешаем вводить копейки: цифры и одну точку/запятую (макс. 2 знака после)
+function cleanNum(s){
+  s=(s||'').replace(',', '.').replace(/[^\d.]/g,'');
+  const parts=s.split('.');
+  let out=parts.shift()||'';
+  if(parts.length) out += '.' + parts.join('').slice(0,2);
+  return out;
+}
+function parseNum(s){ const n=parseFloat(cleanNum(s)); return isNaN(n)?0:n; }
 
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
@@ -757,13 +766,13 @@ function renderGoals(){
       <div class="goal-nums"><b>${fmt(saved)}</b> из ${fmt(target)} ${done?'<span class="goal-done">· накоплено! 🎉</span>':'· '+pct+'%'}</div>
       <div class="goal-bar"><i style="width:${pct}%"></i></div>
       <div class="goal-add">
-        <input inputmode="numeric" placeholder="добавить в копилку">
+        <input inputmode="decimal" placeholder="добавить в копилку">
         <button>＋ Кинуть</button>
       </div>`;
     el.querySelector('.goal-del').onclick=()=>{data.goals.splice(i,1);save();renderGoals();};
     const inp=el.querySelector('.goal-add input');
     const addFn=()=>{
-      const v=parseInt((inp.value||'').replace(/\D/g,''),10);
+      const v=parseNum(inp.value);
       if(!v)return;
       g.saved=saved+v;save();renderGoals();
     };
@@ -803,7 +812,7 @@ function addMoney(type){
   const lbl=document.getElementById(type+'-label');
   const amt=document.getElementById(type+'-amount');
   const label=lbl.value.trim();
-  const amount=parseInt((amt.value||'').replace(/\D/g,''),10);
+  const amount=parseNum(amt.value);
   if(!label && !amount)return;
   if(type==='income'){
     data.income.push({label:label||'Доход', amount:amount||0, card:pickedIncomeCard});
@@ -817,7 +826,7 @@ function addMoney(type){
 
 function addDeposit(){   // пополнить вклад
   const amt=document.getElementById('depin-amount');
-  const amount=parseInt((amt.value||'').replace(/\D/g,''),10);
+  const amount=parseNum(amt.value);
   if(!amount)return;
   data.deposit=(Number(data.deposit)||0)+amount;
   data.transfers.unshift({dir:'in', amount});
@@ -826,7 +835,7 @@ function addDeposit(){   // пополнить вклад
 
 function addCashIn(){   // пополнить карту (деньги на карте)
   const amt=document.getElementById('cashin-amount');
-  const amount=parseInt((amt.value||'').replace(/\D/g,''),10);
+  const amount=parseNum(amt.value);
   if(!amount)return;
   data.cash[pickedCashCard]=(Number(data.cash[pickedCashCard])||0)+amount;
   amt.value='';save();renderMoney();
@@ -834,7 +843,7 @@ function addCashIn(){   // пополнить карту (деньги на ка
 
 function doTransfer(){   // перевести с вклада на кредитку (погасить долг)
   const amt=document.getElementById('transfer-amount');
-  const amount=parseInt((amt.value||'').replace(/\D/g,''),10);
+  const amount=parseNum(amt.value);
   if(!amount)return;
   data.deposit=(Number(data.deposit)||0)-amount;                                   // снимаем с вклада
   data.spent[pickedPayCard]=Math.max(0,(Number(data.spent[pickedPayCard])||0)-amount); // гасим долг по карте
@@ -846,7 +855,7 @@ function addGoal(){
   const nm=document.getElementById('goal-name');
   const tg=document.getElementById('goal-target');
   const name=nm.value.trim();
-  const target=parseInt((tg.value||'').replace(/\D/g,''),10);
+  const target=parseNum(tg.value);
   if(!name && !target)return;
   data.goals.push({name:name||'Моя цель ✨', target:target||0, saved:0});
   nm.value='';tg.value='';save();renderGoals();
@@ -894,30 +903,30 @@ document.getElementById('goal-target').onkeydown=e=>{if(e.key==='Enter')addGoal(
 /* редактирование баланса вклада */
 (function(){
   const el=document.getElementById('deposit-balance');
-  el.oninput=()=>{el.value=el.value.replace(/\D/g,'');data.deposit=Number(el.value)||0;save();};
-  el.onblur=()=>{data.deposit=Number(el.value)||0;save();renderMoney();};
+  el.oninput=()=>{el.value=cleanNum(el.value);data.deposit=parseNum(el.value);save();};
+  el.onblur=()=>{data.deposit=parseNum(el.value);save();renderMoney();};
 })();
 
 /* редактирование «денег на карте» */
 ['t','s'].forEach(k=>{
   const el=document.getElementById('cash-'+k);
-  el.oninput=()=>{el.value=el.value.replace(/\D/g,'');data.cash[k]=Number(el.value)||0;save();};
-  el.onblur=()=>{data.cash[k]=Number(el.value)||0;save();renderMoney();};
+  el.oninput=()=>{el.value=cleanNum(el.value);data.cash[k]=parseNum(el.value);save();};
+  el.onblur=()=>{data.cash[k]=parseNum(el.value);save();renderMoney();};
 });
 
 /* редактирование лимита карт */
 ['t','s'].forEach(k=>{
   const el=document.getElementById('limit-'+k);
-  el.oninput=()=>{el.value=el.value.replace(/\D/g,'');};
-  el.onchange=()=>{data.limits[k]=Number(el.value)||0;save();renderMoney();};
-  el.onblur=()=>{data.limits[k]=Number(el.value)||0;save();renderMoney();};
+  el.oninput=()=>{el.value=cleanNum(el.value);};
+  el.onchange=()=>{data.limits[k]=parseNum(el.value);save();renderMoney();};
+  el.onblur=()=>{data.limits[k]=parseNum(el.value);save();renderMoney();};
 });
 
 /* редактирование «потрачено» прямо на карте */
 ['t','s'].forEach(k=>{
   const el=document.getElementById('spent-'+k);
-  el.oninput=()=>{el.value=el.value.replace(/\D/g,'');data.spent[k]=Number(el.value)||0;updateLeft(k);save();};
-  el.onblur=()=>{data.spent[k]=Number(el.value)||0;save();renderMoney();};
+  el.oninput=()=>{el.value=cleanNum(el.value);data.spent[k]=parseNum(el.value);updateLeft(k);save();};
+  el.onblur=()=>{data.spent[k]=parseNum(el.value);save();renderMoney();};
 });
 function updateLeft(k){
   const limit=Number(data.limits[k])||0, used=Number(data.spent[k])||0, left=limit-used;
