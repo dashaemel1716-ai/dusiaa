@@ -110,6 +110,13 @@
   .pickbtn.active{background:var(--rose);border-color:var(--rose);color:#fff;}
   .pickbtn.pay.active{background:var(--gold);border-color:var(--gold);}
 
+  /* ---------- deposit (вклад) ---------- */
+  .deposit-bal{display:flex;align-items:center;justify-content:space-between;gap:10px;background:linear-gradient(135deg,#d8b878,#c8a96a);border-radius:16px;padding:13px 16px;color:#fff;box-shadow:var(--shadow-sm);}
+  .deposit-bal span{font-size:13px;font-weight:800;letter-spacing:.3px;}
+  .dep-input{width:55%;text-align:right;border:none;background:rgba(255,255,255,.22);border-radius:11px;color:#fff;font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;padding:3px 12px;outline:none;}
+  .dep-input::placeholder{color:rgba(255,255,255,.7);}
+  .dep-input:focus{background:rgba(255,255,255,.34);}
+
   /* ---------- category chips ---------- */
   .catpick{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px;}
   .catchip{border:1.5px solid var(--line);background:var(--surface-2);border-radius:20px;padding:6px 12px;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px;}
@@ -248,27 +255,37 @@
     </div>
 
     <div class="summary">
-      <div class="sumcell"><div class="lbl">Общий лимит</div><div class="val" id="sum-limit">0 ₽</div></div>
-      <div class="sumcell out"><div class="lbl">Потрачено</div><div class="val" id="sum-out">0 ₽</div></div>
-      <div class="sumcell in"><div class="lbl">Можно ещё</div><div class="val" id="sum-left">0 ₽</div></div>
+      <div class="sumcell out"><div class="lbl">Потрачено всего</div><div class="val" id="sum-out">0 ₽</div></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="deposit-card">
       <div class="card-head">
         <span class="dot" style="background:var(--gold)"></span>
-        <h2>Погасить кредитку</h2>
+        <h2>Вклад</h2>
       </div>
-      <p class="seedhint" style="margin:-2px 0 10px">Кидай сюда деньги — долг по карте уменьшается, а «можно ещё» растёт.</p>
-      <div class="list" id="payment-list"></div>
+      <div class="deposit-bal">
+        <span>На вкладе</span>
+        <input class="dep-input" id="deposit-balance" inputmode="numeric" placeholder="0">
+      </div>
+
+      <p class="seedhint" style="margin:14px 0 7px">Пополнить вклад</p>
       <div class="addmoney">
-        <input class="amt-in" id="payment-amount" inputmode="numeric" placeholder="сумма" style="flex:1">
-        <button class="addbtn" style="background:var(--gold)" data-add="payment">+</button>
+        <input class="amt-in" id="depin-amount" inputmode="numeric" placeholder="сумма" style="flex:1">
+        <button class="addbtn green" data-add="depin">+</button>
+      </div>
+
+      <p class="seedhint" style="margin:14px 0 7px">Перевести с вклада на кредитку (погасить долг)</p>
+      <div class="addmoney">
+        <input class="amt-in" id="transfer-amount" inputmode="numeric" placeholder="сумма" style="flex:1">
+        <button class="addbtn" style="background:var(--gold)" data-add="transfer">→</button>
       </div>
       <div class="cardpick">
         <span>На карту:</span>
         <button class="pickbtn pay active" data-pay="t">Тинькофф</button>
         <button class="pickbtn pay" data-pay="s">Сбербанк</button>
       </div>
+
+      <div class="list" id="transfer-list" style="margin-top:12px"></div>
     </div>
 
     <div class="card">
@@ -384,6 +401,8 @@ const DEFAULT = {
   ],
   limits: {t:110000, s:35000},
   spent:  {t:0, s:0},
+  deposit: 0,
+  transfers: [],
   income: [
     {label:'Скинула мама 💗', amount:0},
   ],
@@ -588,7 +607,7 @@ function renderMoney(){
   document.getElementById('limit-s').value = data.limits.s || '';
   renderMoneyList(data.income, document.getElementById('income-list'),'income',document.getElementById('income-count'));
   renderMoneyList(data.expense, document.getElementById('expense-list'),'expense',document.getElementById('expense-count'));
-  renderPayments();
+  renderDeposit();
   renderBreakdown();
   renderGoals();
 
@@ -609,24 +628,35 @@ function renderMoney(){
     bar.classList.toggle('over', left<0);
   });
 
-  document.getElementById('sum-limit').textContent = fmt(totLimit);
   document.getElementById('sum-out').textContent   = fmt(Math.max(0,totUsed));
-  document.getElementById('sum-left').textContent  = fmt(totLimit-totUsed);
 }
 
-function renderPayments(){
-  const c=document.getElementById('payment-list');
+function renderDeposit(){
+  const bal=document.getElementById('deposit-balance');
+  if(document.activeElement!==bal) bal.value = (Number(data.deposit)||0) || '';
+  const c=document.getElementById('transfer-list');
   c.innerHTML='';
-  if(!data.payments.length){
-    const e=document.createElement('div');e.className='empty';e.textContent='Кинь сюда деньги, чтобы гасить долг';
+  if(!data.transfers || !data.transfers.length){
+    const e=document.createElement('div');e.className='empty';e.textContent='Здесь будет история пополнений и переводов';
     c.appendChild(e);return;
   }
-  data.payments.forEach((p,i)=>{
+  data.transfers.forEach((tr,i)=>{
     const row=document.createElement('div');
-    row.className='money-row income';
-    row.innerHTML=`<span class="mtxt">Погашение<span class="mcard">${p.card==='t'?'Тинькофф':'Сбербанк'}</span></span>
-      <span class="mamt">−${fmt(p.amount)}</span><button class="del">×</button>`;
-    row.querySelector('.del').onclick=()=>{data.spent[p.card]=(Number(data.spent[p.card])||0)+(Number(p.amount)||0);data.payments.splice(i,1);save();renderMoney();};
+    const isIn = tr.dir==='in';
+    row.className='money-row '+(isIn?'income':'expense');
+    const label = isIn ? 'Пополнение вклада'
+                       : `Перевод на <span class="mcard">${tr.card==='t'?'Тинькофф':'Сбербанк'}</span>`;
+    row.innerHTML=`<span class="mtxt">${label}</span>
+      <span class="mamt">${isIn?'+':'−'}${fmt(tr.amount)}</span><button class="del">×</button>`;
+    row.querySelector('.del').onclick=()=>{
+      // отменяем операцию
+      if(isIn){ data.deposit=(Number(data.deposit)||0)-(Number(tr.amount)||0); }
+      else{
+        data.deposit=(Number(data.deposit)||0)+(Number(tr.amount)||0);
+        data.spent[tr.card]=(Number(data.spent[tr.card])||0)+(Number(tr.amount)||0);
+      }
+      data.transfers.splice(i,1);save();renderMoney();
+    };
     c.appendChild(row);
   });
 }
@@ -734,12 +764,22 @@ function addMoney(type){
   lbl.value='';amt.value='';save();renderMoney();
 }
 
-function addPayment(){
-  const amt=document.getElementById('payment-amount');
+function addDeposit(){   // пополнить вклад
+  const amt=document.getElementById('depin-amount');
   const amount=parseInt((amt.value||'').replace(/\D/g,''),10);
   if(!amount)return;
-  data.payments.push({amount, card:pickedPayCard});
-  data.spent[pickedPayCard]=Math.max(0,(Number(data.spent[pickedPayCard])||0)-amount); // погашение уменьшает долг
+  data.deposit=(Number(data.deposit)||0)+amount;
+  data.transfers.unshift({dir:'in', amount});
+  amt.value='';save();renderMoney();
+}
+
+function doTransfer(){   // перевести с вклада на кредитку (погасить долг)
+  const amt=document.getElementById('transfer-amount');
+  const amount=parseInt((amt.value||'').replace(/\D/g,''),10);
+  if(!amount)return;
+  data.deposit=(Number(data.deposit)||0)-amount;                                   // снимаем с вклада
+  data.spent[pickedPayCard]=Math.max(0,(Number(data.spent[pickedPayCard])||0)-amount); // гасим долг по карте
+  data.transfers.unshift({dir:'out', amount, card:pickedPayCard});
   amt.value='';save();renderMoney();
 }
 
@@ -776,7 +816,8 @@ document.querySelectorAll('[data-add]').forEach(btn=>{
   const t=btn.dataset.add;
   btn.onclick=()=>{
     if(t==='main') addTask(data.main, document.getElementById('main-input'), ()=>{renderList(data.main,document.getElementById('main-list'),document.getElementById('main-count'));});
-    else if(t==='payment') addPayment();
+    else if(t==='depin') addDeposit();
+    else if(t==='transfer') doTransfer();
     else if(t==='goal') addGoal();
     else addMoney(t);
   };
@@ -785,8 +826,16 @@ document.getElementById('main-input').onkeydown=e=>{if(e.key==='Enter')document.
 ['income','expense'].forEach(t=>{
   document.getElementById(t+'-amount').onkeydown=e=>{if(e.key==='Enter')addMoney(t);};
 });
-document.getElementById('payment-amount').onkeydown=e=>{if(e.key==='Enter')addPayment();};
+document.getElementById('depin-amount').onkeydown=e=>{if(e.key==='Enter')addDeposit();};
+document.getElementById('transfer-amount').onkeydown=e=>{if(e.key==='Enter')doTransfer();};
 document.getElementById('goal-target').onkeydown=e=>{if(e.key==='Enter')addGoal();};
+
+/* редактирование баланса вклада */
+(function(){
+  const el=document.getElementById('deposit-balance');
+  el.oninput=()=>{el.value=el.value.replace(/\D/g,'');data.deposit=Number(el.value)||0;save();};
+  el.onblur=()=>{data.deposit=Number(el.value)||0;save();renderMoney();};
+})();
 
 /* редактирование лимита карт */
 ['t','s'].forEach(k=>{
